@@ -2,7 +2,7 @@ from typing import List
 from .toy import Toy
 
 class Solution:
-    """Classe que representa uma solução para o problema UKP"""
+    """Printa a solução para o UKP"""
     
     def __init__(self, toys: List[Toy], quantities: List[int] = None):
         self.toys = toys    # todos os tipos de brinquedos
@@ -23,7 +23,7 @@ class Solution:
         """Calcula o lucro total da solução"""
         sum = 0
         for toy, qty in zip(self.toys, self.quantities):
-            sum += toy.production_cost * qty
+            sum += (toy.sale_price - toy.production_cost) * qty
         return sum
     
     def is_valid(self, budget: float) -> bool:
@@ -31,4 +31,4 @@ class Solution:
         return self.total_cost() <= budget
     
     def __repr__(self):
-        return f"Solution(cost={self.total_cost()}, profit={self.total_profit()}, quantities={self.quantities})"
+        return f"Solution(cost={self.total_cost():.2f}, profit={self.total_profit():.2f}, quantities={self.quantities})"

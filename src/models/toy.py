@@ -13,4 +13,4 @@ class Toy:
     
     def __repr__(self):
         """Função que define como o objeto será printado como string"""
-        return f"Toy(id={self.id}, name='{self.name}', cost={self.production_cost}, price={self.sale_price}, profit={self.profit})"
+        return f"Toy(id={self.id}, name='{self.name}', cost={self.production_cost}, price={self.sale_price})"
