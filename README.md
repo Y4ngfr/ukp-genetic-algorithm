@@ -58,8 +58,8 @@ python main.py solve --instance data/instances/instance.csv --budget 1000.0 --po
 - `mutation-rate`: Taxa de mutação
 
 ## Desenvolvedores
-Adriam de Souza
-Cristhian de Avilla
-Francys dos Anjos
-Lucas Rodrigues
-Yang Rodrigues
+- Adriam de Souza
+- Cristhian de Avilla
+- Francys dos Anjos
+- Lucas Rodrigues
+- Yang Rodrigues
