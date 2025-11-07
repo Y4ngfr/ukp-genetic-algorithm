@@ -21,7 +21,6 @@ ukp-genetic-algorithm/
 │   ├── algorithms/       # Implementação do algoritmo genético
 │   ├── models/          # Classes de modelo (Toy, Solution)
 │   └── utils/           # Utilitários e geradores de dados
-├── tests/               # Testes unitários
 └── main.py             # Ponto de entrada da aplicação
 ```
 
