@@ -33,8 +33,6 @@ def setup():
     parser = create_parser()
     args = parser.parse_args()
 
-    print("teste")
-
     if args.command == 'generate':
         # Gera instância
         toys = Dg.generate_toys(
