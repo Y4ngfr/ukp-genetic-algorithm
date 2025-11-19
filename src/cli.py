@@ -35,14 +35,14 @@ def setup():
 
     if args.command == 'generate':
         # Gera instância
-        toys = Dg.generate_toys(
+        toys_ids = Dg.generate_toys(
             num_toys=args.num_toys,
             min_cost=args.min_cost,
             max_cost=args.max_cost,
             min_profit_margin=args.min_margin,
             max_profit_margin=args.max_margin
         )
-        Dg.save_instance(toys, args.output)
+        Dg.save_instance(toys_ids, args.output)
         print(f"Instância gerada com {args.num_toys} brinquedos em {args.output}")
 
     elif args.command == 'solve':
