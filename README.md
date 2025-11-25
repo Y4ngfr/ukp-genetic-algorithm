@@ -21,8 +21,8 @@ ukp-genetic-algorithm/
 │   ├── algorithms/
 │   │   └── genetic_algorithm.py  # Implementação do algoritmo genético parametrizável
 │   ├── models/
-│   │   ├── toy.py           # Classe Toy e gerenciamento global
-│   │   └── solution.py      # Classe Solution com cache de valores
+│   │   ├── toy.py           # Classe Toy
+│   │   └── solution.py      # Classe Solution
 │   ├── utils/
 │   │   └── data_generator.py     # Gerador de instâncias
 │   └── cli.py               # Interface de linha de comando
