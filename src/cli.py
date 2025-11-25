@@ -1,5 +1,7 @@
 from src.utils.data_generator import DataGenerator as Dg
 import argparse
+import os
+
 
 def create_parser():
     """Cria o parser de argumentos de linha de comando"""
@@ -67,4 +69,10 @@ def setup():
         
         best_solution = ga.solve(toys_ids, args.budget)
         print(best_solution)
-        best_solution.save_to_csv("resultado.csv")
+
+        # salva na pasta data/solution com o mesmo nome do csv de instances
+        base = os.path.basename (args.instance)
+        caminho = os.path.join("data", "solutions", base)
+        os.makedirs(os.path.dirname(caminho), exist_ok=True)
+
+        best_solution.save_to_csv(caminho)
