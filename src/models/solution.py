@@ -6,6 +6,8 @@ class Solution:
     
     def __init__(self, toys: List[Toy], quantities: List[int] = None):
         self.toys = toys    # todos os tipos de brinquedos
+        self._total_cost = None
+        self._total_profit = None
 
         if quantities:      # quantidades de cada tipo de brinquedo
             self.quantities = quantities
@@ -14,17 +16,24 @@ class Solution:
     
     def total_cost(self) -> float:
         """Calcula o custo total da solução"""
-        sum = 0
-        for toy, qty in zip(self.toys, self.quantities):
-            sum += toy.production_cost * qty
-        return sum
+        if self._total_cost is None:
+            self._total_cost = 0
+            for toy, qty in zip(self.toys, self.quantities):
+                self._total_cost += toy.production_cost * qty
+        return self._total_cost
     
     def total_profit(self) -> float:
         """Calcula o lucro total da solução"""
-        sum = 0
-        for toy, qty in zip(self.toys, self.quantities):
-            sum += (toy.sale_price - toy.production_cost) * qty
-        return sum
+        if self._total_profit is None:
+            self._total_profit = 0
+            for toy, qty in zip(self.toys, self.quantities):
+                self._total_profit += toy.profit() * qty
+        return self._total_profit
+
+    def invalidate_cache(self):
+        """Limpa o cache após mutação/crossover"""
+        self._total_cost = None
+        self._total_profit = None
     
     def is_valid(self, budget: float) -> bool:
         """Verifica se a solução respeita o orçamento"""

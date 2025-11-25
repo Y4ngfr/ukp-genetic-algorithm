@@ -10,11 +10,14 @@ class DataGenerator:    # Classe utilitária (todos os métodos estáticos)
                      min_cost: float,           # custo mínimo de um brinquedo 
                      max_cost: float,           # custo máximo de um brinquedo
                      min_profit_margin: float,  # percentual de lucro mínimo de um brinquedo
-                     max_profit_margin: float   # percentual de lucro máximo de um brinquedo
-                     ) -> List[int]:
+                     max_profit_margin: float,  # percentual de lucro máximo de um brinquedo
+                     seed=None) -> List[int]:
         """
         Gera uma lista de brinquedos com parâmetros aleatórios
         """
+        
+        if seed is not None:
+            random.seed(seed)
         
         generated_ids = []
         for _ in range(num_toys):

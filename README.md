@@ -18,10 +18,15 @@ ukp-genetic-algorithm/
 ├── data/
 │   └── instances/        # Instâncias do problema
 ├── src/
-│   ├── algorithms/       # Implementação do algoritmo genético
-│   ├── models/          # Classes de modelo (Toy, Solution)
-│   └── utils/           # Utilitários e geradores de dados
-└── main.py             # Ponto de entrada da aplicação
+│   ├── algorithms/
+│   │   └── genetic_algorithm.py  # Implementação do algoritmo genético parametrizável
+│   ├── models/
+│   │   ├── toy.py           # Classe Toy e gerenciamento global
+│   │   └── solution.py      # Classe Solution com cache de valores
+│   ├── utils/
+│   │   └── data_generator.py     # Gerador de instâncias
+│   └── cli.py               # Interface de linha de comando
+└── main.py                 # Ponto de entrada da aplicação
 ```
 
 ## Como Usar
@@ -29,13 +34,13 @@ ukp-genetic-algorithm/
 ### Gerando uma Instância
 
 ```bash
-python main.py generate --num_toys 10 --min_cost 1.0 --max_cost 100.0 --min_margin 0.1 --max_margin 2.0 --output data/instances/instance.csv
+python main.py generate --num_toys 10 --min_cost 1.0 --max_cost 100.0 --min_margin 0.1 --max_margin 2.0 --seed 42 --output data/instances/instance.csv
 ```
 
 ### Resolvendo uma Instância
 
 ```bash
-python main.py solve --instance data/instances/instance.csv --budget 1000.0 --population 100 --generations 1000
+python main.py solve --instance data/instances/instance.csv --budget 1000.0 --population 100 --generations 1000 --seed 42
 ```
 
 ## Parâmetros
@@ -47,14 +52,19 @@ python main.py solve --instance data/instances/instance.csv --budget 1000.0 --po
 - `min_margin`: Margem de lucro mínima (percentual)
 - `max_margin`: Margem de lucro máxima (percentual)
 - `output`: Arquivo de saída para a instância
+- `seed`: Seed para reprodutibilidade
 
 ### Algoritmo Genético
 - `instance`: Arquivo da instância a ser resolvida
 - `budget`: Orçamento disponível para produção
 - `population`: Tamanho da população
 - `generations`: Número de gerações
-- `crossover-rate`: Taxa de crossover
-- `mutation-rate`: Taxa de mutação
+- `crossover_rate`: Taxa de crossover
+- `mutation_rate`: Taxa de mutação
+- `selection_type`: Tipo de seleção - tournament ou roulette (padrão: tournament)
+- `crossover_type`: Tipo de crossover - single_point ou two_point (padrão: single_point)
+- `mutation_type`: Tipo de mutação - uniform ou gaussian (padrão: uniform)
+- `seed`: Seed para reprodutibilidade
 
 ## Desenvolvedores
 - Adriam de Souza
