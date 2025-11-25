@@ -13,8 +13,8 @@ def create_parser():
     generate_parser.add_argument('--max_cost', type=float, default=100.0, help='Custo máximo')
     generate_parser.add_argument('--min_margin', type=float, default=0.1, help='Margem de lucro mínima')
     generate_parser.add_argument('--max_margin', type=float, default=2.0, help='Margem de lucro máxima')
-    generate_parser.add_argument('--output', type=str, default='data/instances/instance.csv', help='Arquivo de saída')
     generate_parser.add_argument('--seed', type=int, default=None, help='Seed para reprodutibilidade')
+    generate_parser.add_argument('--output', type=str, default='data/instances/instance.csv', help='Arquivo de saída')
 
     # Comando para resolver
     solve_parser = subparsers.add_parser('solve', help='Resolver instância do problema')
@@ -67,3 +67,4 @@ def setup():
         
         best_solution = ga.solve(toys_ids, args.budget)
         print(best_solution)
+        best_solution.save_to_csv("resultado.csv")
