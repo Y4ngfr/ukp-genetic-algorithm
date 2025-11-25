@@ -17,6 +17,7 @@ O problema consiste em otimizar a produção de uma fábrica de brinquedos, dete
 ukp-genetic-algorithm/
 ├── data/
 │   └── instances/        # Instâncias do problema
+│   └── solutions/        # Soluções
 ├── src/
 │   ├── algorithms/
 │   │   └── genetic_algorithm.py  # Implementação do algoritmo genético parametrizável
