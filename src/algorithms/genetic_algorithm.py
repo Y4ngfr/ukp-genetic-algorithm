@@ -2,7 +2,7 @@ import random
 from typing import List
 from ..models.solution import Solution
 from ..models.toy import global_toys, get_toy_by_id
-from src.utils.plotter import plot_evolution_simple
+from src.utils.plotter import plot_evolution
 
 class GeneticAlgorithm:
     """Algoritmo genético para resolver o UKP"""
@@ -26,6 +26,7 @@ class GeneticAlgorithm:
         self.best_fitness_history = []
         self.avg_fitness_history = []
         self.generation_history = []
+        self.validity_rate_history = []
         
         if seed is not None:
             random.seed(seed)
@@ -46,10 +47,17 @@ class GeneticAlgorithm:
             # Armazenar métricas
             best_fitness = max(fitness_values)
             avg_fitness = sum(fitness_values) / len(fitness_values)
+
+            valid_solutions = 0
+            for solution in population:
+                if solution.is_valid(self.budget):
+                    valid_solutions += 1
+            validity_rate = (valid_solutions / len(population)) * 100
             
             self.best_fitness_history.append(best_fitness)
             self.avg_fitness_history.append(avg_fitness)
             self.generation_history.append(generation)
+            self.validity_rate_history.append(validity_rate)
 
             # Selecionar pais
             parents = self._selection(population, fitness_values)
@@ -80,9 +88,10 @@ class GeneticAlgorithm:
         
         # Gerar gráfico
         plot_path = None
-        plot_path = plot_evolution_simple(
+        plot_path = plot_evolution(
             self.best_fitness_history,
             self.avg_fitness_history,
+            self.validity_rate_history,
             self.generation_history,
         )
 
