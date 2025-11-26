@@ -2,7 +2,7 @@ import random
 from typing import List
 from ..models.solution import Solution
 from ..models.toy import global_toys, get_toy_by_id
-
+from src.utils.plotter import plot_evolution_simple
 
 class GeneticAlgorithm:
     """Algoritmo genético para resolver o UKP"""
@@ -11,6 +11,7 @@ class GeneticAlgorithm:
                  crossover_rate=0.8, mutation_rate=0.1,
                  selection_type='tournament', crossover_type='single_point', 
                  mutation_type='uniform', seed=None):
+        
         self.population_size = population_size
         self.generations = generations
         self.crossover_rate = crossover_rate
@@ -20,6 +21,11 @@ class GeneticAlgorithm:
         self.mutation_type = mutation_type
         self.budget = None
         self.toys = None
+
+        # Listas para armazenar histórico
+        self.best_fitness_history = []
+        self.avg_fitness_history = []
+        self.generation_history = []
         
         if seed is not None:
             random.seed(seed)
@@ -37,6 +43,14 @@ class GeneticAlgorithm:
             # Avaliar população
             fitness_values = [self._fitness(solution) for solution in population]
             
+            # Armazenar métricas
+            best_fitness = max(fitness_values)
+            avg_fitness = sum(fitness_values) / len(fitness_values)
+            
+            self.best_fitness_history.append(best_fitness)
+            self.avg_fitness_history.append(avg_fitness)
+            self.generation_history.append(generation)
+
             # Selecionar pais
             parents = self._selection(population, fitness_values)
             
@@ -63,6 +77,15 @@ class GeneticAlgorithm:
         # Retornar melhor solução
         fitness_values = [self._fitness(solution) for solution in population]
         best_idx = fitness_values.index(max(fitness_values))
+        
+        # Gerar gráfico
+        plot_path = None
+        plot_path = plot_evolution_simple(
+            self.best_fitness_history,
+            self.avg_fitness_history,
+            self.generation_history,
+        )
+
         return population[best_idx]
     
     def _initialize_population(self) -> List[Solution]:
