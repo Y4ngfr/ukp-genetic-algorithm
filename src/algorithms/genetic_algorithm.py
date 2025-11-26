@@ -47,7 +47,6 @@ class GeneticAlgorithm:
             # Armazenar métricas
             best_fitness = max(fitness_values)
             avg_fitness = sum(fitness_values) / len(fitness_values)
-
             valid_solutions = 0
             for solution in population:
                 if solution.is_valid(self.budget):
@@ -80,8 +79,11 @@ class GeneticAlgorithm:
                 
                 offspring.extend([child1, child2])
             
-            population = offspring[:self.population_size]
-        
+            # Mantém os melhores (elitismo)
+            fitness_values = [self._fitness(child) for child in offspring]
+            indices_ordenados = sorted(range(len(offspring)), key=lambda i: fitness_values[i], reverse=True)
+            population = [offspring[i] for i in indices_ordenados[:self.population_size]]
+
         # Retornar melhor solução
         fitness_values = [self._fitness(solution) for solution in population]
         best_idx = fitness_values.index(max(fitness_values))
