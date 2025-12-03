@@ -30,6 +30,7 @@ def create_parser():
     solve_parser.add_argument('--crossover_type', type=str, default='single_point', help='Tipo de crossover (single_point, two_point)')
     solve_parser.add_argument('--mutation_type', type=str, default='uniform', help='Tipo de mutação (uniform, gaussian)')
     solve_parser.add_argument('--seed', type=int, default=None, help='Seed para reprodutibilidade')
+    solve_parser.add_argument('--penality', type=int, default=10, help='Penalidade para soluções inválidas')
 
     return parser
 
@@ -64,7 +65,8 @@ def setup():
             selection_type=args.selection_type,
             crossover_type=args.crossover_type,
             mutation_type=args.mutation_type,
-            seed=args.seed
+            seed=args.seed,
+            penality=args.penality
         )
         
         best_solution = ga.solve(toys_ids, args.budget)

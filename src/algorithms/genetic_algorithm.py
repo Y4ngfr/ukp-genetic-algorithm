@@ -10,7 +10,7 @@ class GeneticAlgorithm:
     def __init__(self, population_size=100, generations=1000, 
                  crossover_rate=0.8, mutation_rate=0.1,
                  selection_type='tournament', crossover_type='single_point', 
-                 mutation_type='uniform', seed=None):
+                 mutation_type='uniform', seed=None, penality=10):
         
         self.population_size = population_size
         self.generations = generations
@@ -21,15 +21,20 @@ class GeneticAlgorithm:
         self.mutation_type = mutation_type
         self.budget = None
         self.toys = None
+        self.penality = penality
 
         # Listas para armazenar histórico
         self.best_fitness_history = []
         self.avg_fitness_history = []
         self.generation_history = []
         self.validity_rate_history = []
+        self.hamming_distance = []
+        self.total_difference = []
         
         if seed is not None:
             random.seed(seed)
+
+
     
     def solve(self, toy_ids: List[int], budget: float) -> Solution:
         """Resolve o UKP usando algoritmo genético"""
@@ -38,7 +43,7 @@ class GeneticAlgorithm:
         
         # Inicializar população
         population = self._initialize_population()
-        
+
         # Evoluir por gerações
         for generation in range(self.generations):
             # Avaliar população
@@ -52,11 +57,36 @@ class GeneticAlgorithm:
                 if solution.is_valid(self.budget):
                     valid_solutions += 1
             validity_rate = (valid_solutions / len(population)) * 100
+
+
+            n_toys = len(population[0].quantities)
+            num_pairs = 0
+            differences = 0
+            total_diff = 0
+            for i in range(len(population)):
+                for j in range(i+1, len(population)):
+                    sol1 = population[i]
+                    sol2 = population[j]
+
+                    differences += sum(1 for a, b in zip(sol1.quantities, sol2.quantities) if a != b)
+                    num_pairs += 1 
+
+                    total_diff += sum(abs(a - b) for a, b in zip(sol1.quantities, sol2.quantities))
+
+
+                    # normalized = differences / n_toys
+                    # total_normalized_distance += normalized
+
+            total_normalized_distance = differences / (n_toys * num_pairs)
+            total_diff_normalized = total_diff / (n_toys * num_pairs)
+
             
             self.best_fitness_history.append(best_fitness)
             self.avg_fitness_history.append(avg_fitness)
             self.generation_history.append(generation)
             self.validity_rate_history.append(validity_rate)
+            self.hamming_distance.append(total_normalized_distance)
+            self.total_difference.append(total_diff_normalized)
 
             # Selecionar pais
             parents = self._selection(population, fitness_values)
@@ -95,6 +125,8 @@ class GeneticAlgorithm:
             self.avg_fitness_history,
             self.validity_rate_history,
             self.generation_history,
+            self.hamming_distance,
+            self.total_difference
         )
 
         return population[best_idx]
@@ -124,7 +156,7 @@ class GeneticAlgorithm:
         else:
             # Penalização proporcional ao excesso de orçamento
             excess = solution.total_cost() - self.budget
-            penalty = excess * 2  # Penalidade arbitrária
+            penalty = excess * self.penality  # Penalidade arbitrária
             return solution.total_profit() - penalty
     
     def _selection(self, population: List[Solution], fitness_values: List[float]) -> List[Solution]:
