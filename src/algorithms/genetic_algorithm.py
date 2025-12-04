@@ -1,8 +1,39 @@
 import random
+import numpy as np
 from typing import List
 from ..models.solution import Solution
 from ..models.toy import global_toys, get_toy_by_id
 from src.utils.plotter import plot_evolution
+
+def upper_bound_greedy(toys, budget):
+    """
+    Limite superior: assume que pode produzir frações de brinquedos
+    (relaxamento contínuo do problema)
+    """
+    # Calcula ROI de cada brinquedo
+    toys_with_roi = []
+    for toy in toys:
+        roi = toy.profit() / toy.production_cost if toy.production_cost > 0 else 0
+        toys_with_roi.append((toy, roi))
+    
+    # Ordena por ROI (maior primeiro)
+    toys_with_roi.sort(key=lambda x: x[1], reverse=True)
+    
+    remaining_budget = budget
+    max_profit = 0
+    
+    for toy, roi in toys_with_roi:
+        if remaining_budget <= 0:
+            break
+        
+        # Quantidade máxima que caberia no orçamento restante
+        max_units = remaining_budget / toy.production_cost
+        
+        # Adiciona TODO o lucro possível deste brinquedo
+        max_profit += max_units * toy.profit()
+        remaining_budget -= max_units * toy.production_cost
+    
+    return max_profit
 
 class GeneticAlgorithm:
     """Algoritmo genético para resolver o UKP"""
@@ -30,6 +61,7 @@ class GeneticAlgorithm:
         self.validity_rate_history = []
         self.hamming_distance = []
         self.total_difference = []
+        self.efficiency = []
         
         if seed is not None:
             random.seed(seed)
@@ -46,6 +78,8 @@ class GeneticAlgorithm:
 
         # Evoluir por gerações
         for generation in range(self.generations):
+            print(f"gen {generation}")
+
             # Avaliar população
             fitness_values = [self._fitness(solution) for solution in population]
             
@@ -80,7 +114,12 @@ class GeneticAlgorithm:
             total_normalized_distance = differences / (n_toys * num_pairs)
             total_diff_normalized = total_diff / (n_toys * num_pairs)
 
+
+            best_idx = fitness_values.index(best_fitness)
+            best_solution = population[best_idx]
+            best_efficiency = best_solution.total_profit() / best_solution.total_cost()
             
+            self.efficiency.append(best_efficiency)    
             self.best_fitness_history.append(best_fitness)
             self.avg_fitness_history.append(avg_fitness)
             self.generation_history.append(generation)
@@ -104,8 +143,8 @@ class GeneticAlgorithm:
                     child1, child2 = parent1, parent2
                 
                 # Mutação
-                child1 = self._mutation(child1)
-                child2 = self._mutation(child2)
+                child1 = self._mutation(child1, generation)
+                child2 = self._mutation(child2, generation)
                 
                 offspring.extend([child1, child2])
             
@@ -118,6 +157,8 @@ class GeneticAlgorithm:
         fitness_values = [self._fitness(solution) for solution in population]
         best_idx = fitness_values.index(max(fitness_values))
         
+        max_profit = upper_bound_greedy(self.toys,self.budget)
+
         # Gerar gráfico
         plot_path = None
         plot_path = plot_evolution(
@@ -126,11 +167,15 @@ class GeneticAlgorithm:
             self.validity_rate_history,
             self.generation_history,
             self.hamming_distance,
-            self.total_difference
+            self.total_difference,
+            max_profit,
+            self.efficiency
         )
 
         return population[best_idx]
     
+
+
     def _initialize_population(self) -> List[Solution]:
         """Cria população inicial com soluções aleatórias"""
         population = []
@@ -236,12 +281,14 @@ class GeneticAlgorithm:
         
         return child1, child2
     
-    def _mutation(self, solution: Solution) -> Solution:
+    def _mutation(self, solution: Solution, generation: int) -> Solution:
         """Aplica mutação à solução"""
         if self.mutation_type == 'uniform':
             return self._uniform_mutation(solution)
         elif self.mutation_type == 'gaussian':
             return self._gaussian_mutation(solution)
+        elif self.mutation_type == 'adaptative':
+            return self._adaptive_mutation(solution, generation)
         else:
             return self._uniform_mutation(solution)
     
@@ -272,3 +319,90 @@ class GeneticAlgorithm:
         child = Solution(self.toys, new_quantities)
         child.invalidate_cache()
         return child
+
+
+    # def _adaptative_mutation(self, solution: Solution) -> Solution:
+        # pass
+
+    def _adaptive_mutation(self, solution: Solution, generation: int = None) -> Solution:
+        """
+        Mutação gaussiana com desvio padrão que varia com a geração:
+        - Início: desvio ALTO (muita exploração)
+        - Fim: desvio BAIXO (pouca exploração, muito refinamento)
+        """
+        new_quantities = solution.quantities.copy()
+        
+        for i in range(len(new_quantities)):
+            if random.random() < self.mutation_rate:
+                current_qty = new_quantities[i]
+                max_qty = int(self.budget / self.toys[i].production_cost)
+            
+                if generation is not None and self.generations > 0:
+                    progress = generation / self.generations  # 0 a 1
+                    
+                    # Desvio padrão decresce exponencialmente com as gerações
+                    # Início: desvio alto (ex: 10-20% do valor atual)
+                    # Fim: desvio baixo (ex: 1-2% do valor atual)
+                    
+                    # Opção 1: Linear (simples)
+                    # max_std = 0.2  # 20% no início
+                    # min_std = 0.02 # 2% no final
+                    # std_dev_percent = max_std - (max_std - min_std) * progress
+                    
+                    # Opção 2: Exponencial (melhor!)
+                    initial_std = 0.3    # 30% no início
+                    final_std = 0.01     # 1% no final
+                    decay_rate = 5.0     # Taxa de decaimento
+                    std_dev_percent = final_std + (initial_std - final_std) * np.exp(-decay_rate * progress)
+                    
+                    # Opção 3: Por estágios (mais controlado)
+                    # if progress < 0.3:        std_dev_percent = 0.25  # 25%
+                    # elif progress < 0.6:      std_dev_percent = 0.1   # 10%
+                    # elif progress < 0.8:      std_dev_percent = 0.05  # 5%
+                    # else:                     std_dev_percent = 0.02  # 2%
+                    
+                else:
+                    # Sem informação de geração, usa valor fixo
+                    std_dev_percent = 0.1  # 10% padrão
+                
+                # ============================================
+                # Aplica mutação gaussiana
+                # ============================================
+                if current_qty > 0:
+                    # Desvio em unidades = porcentagem do valor atual
+                    std_dev_units = max(1, int(current_qty * std_dev_percent))
+                    
+                    # Gerar delta gaussiano
+                    delta = int(random.gauss(0, std_dev_units))
+                    
+                    # Aplicar delta
+                    new_qty = current_qty + delta
+                else:
+                    # Se quantidade atual é 0, mutação especial
+                    # Chance de começar a produzir este brinquedo
+                    if random.random() < 0.3:  # 30% chance de ativar
+                        # Começa com quantidade pequena
+                        std_dev_units = max(1, int(max_qty * 0.05))  # 5% do máximo
+                        new_qty = abs(int(random.gauss(std_dev_units, std_dev_units//2)))
+                    else:
+                        new_qty = 0  # Mantém zero
+                
+                # Garantir limites
+                new_qty = max(0, new_qty)
+                new_qty = min(new_qty, max_qty)
+                
+                # Ocasionalmente (5% chance), reiniciar completamente
+                # Isso ajuda a escapar de ótimos locais
+                if random.random() < 0.05:
+                    new_qty = random.randint(0, max_qty)
+                
+                new_quantities[i] = new_qty
+        
+        child = Solution(self.toys, new_quantities)
+        child.invalidate_cache()
+        return child
+    
+
+
+
+# [1, 2, 3, 4]
